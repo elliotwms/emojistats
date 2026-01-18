@@ -2,6 +2,7 @@ package emojistats
 
 import (
 	"context"
+	"database/sql"
 	"log/slog"
 
 	"github.com/bwmarrin/discordgo"
@@ -17,6 +18,7 @@ type Config struct {
 	HealthCheckAddr string
 	GuildID         string
 	Logger          *slog.Logger
+	DB              *sql.DB
 }
 
 func NewConfig(s *discordgo.Session, appID string) Config {
@@ -32,6 +34,7 @@ func Run(config Config, ctx context.Context) error {
 		WithLogger(config.Logger).
 		WithIntents(intents).
 		WithHandler(eventhandlers.Ready).
+		WithHandler(eventhandlers.NewReactionAddHandler(config.DB)).
 		WithMigrationEnabled(true)
 
 	if config.HealthCheckAddr != "" {

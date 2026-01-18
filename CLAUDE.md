@@ -24,6 +24,7 @@ docker compose up -d
 |----------|----------|-------------|
 | TOKEN | Yes | Discord bot token |
 | APPLICATION_ID | Yes | Discord application ID |
+| DATABASE_URL | Yes | PostgreSQL connection string |
 | GUILD_ID | No | Restrict bot to specific guild |
 | HEALTH_CHECK_ADDR | No | Health check endpoint address |
 | LOG_LEVEL | No | Logging level |
