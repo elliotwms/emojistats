@@ -22,7 +22,12 @@ func main() {
 		slog.Error("failed to connect to database", "error", err)
 		os.Exit(1)
 	}
-	defer db.Close()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			slog.Error("failed to close database", "error", err)
+		}
+	}()
 
 	if err := database.Migrate(db); err != nil {
 		slog.Error("failed to run migrations", "error", err)
