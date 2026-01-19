@@ -9,6 +9,15 @@ import (
 
 func NewReactionAddHandler(db *sql.DB) func(*discordgo.Session, *discordgo.MessageReactionAdd) {
 	return func(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
+		slog.Debug("reaction add event received",
+			"emoji_id", r.Emoji.ID,
+			"emoji_name", r.Emoji.Name,
+			"user_id", r.UserID,
+			"channel_id", r.ChannelID,
+			"message_id", r.MessageID,
+			"guild_id", r.GuildID,
+		)
+
 		msg, err := s.ChannelMessage(r.ChannelID, r.MessageID)
 		if err != nil {
 			slog.Error("failed to get message", "error", err)
@@ -44,6 +53,58 @@ func NewReactionAddHandler(db *sql.DB) func(*discordgo.Session, *discordgo.Messa
 			"emoji_id", r.Emoji.ID,
 			"sender", r.UserID,
 			"receiver", msg.Author.ID,
+		)
+	}
+}
+
+func NewReactionRemoveHandler(db *sql.DB) func(*discordgo.Session, *discordgo.MessageReactionRemove) {
+	return func(s *discordgo.Session, r *discordgo.MessageReactionRemove) {
+		slog.Debug("reaction remove event received",
+			"emoji_id", r.Emoji.ID,
+			"emoji_name", r.Emoji.Name,
+			"user_id", r.UserID,
+			"channel_id", r.ChannelID,
+			"message_id", r.MessageID,
+			"guild_id", r.GuildID,
+		)
+
+		id := r.Emoji.ID
+		if id == "" {
+			id = r.Emoji.Name
+		}
+
+		res, err := db.Exec(`
+			DELETE FROM reactions
+			WHERE emoji_id = $1 AND sender_user_id = $2 AND message_id = $3`,
+			id,
+			r.UserID,
+			r.MessageID,
+		)
+		if err != nil {
+			slog.Error("failed to delete reaction", "error", err)
+			return
+		}
+
+		rows, err := res.RowsAffected()
+		if err != nil {
+			slog.Error("failed to get rows affected", "error", err)
+			return
+		}
+
+		if rows != 1 {
+			slog.Warn("unexpected number of reactions deleted",
+				"expected", 1,
+				"actual", rows,
+				"emoji_id", id,
+				"sender", r.UserID,
+				"message_id", r.MessageID,
+			)
+			return
+		}
+
+		slog.Info("reaction removed",
+			"emoji_id", id,
+			"sender", r.UserID,
 		)
 	}
 }

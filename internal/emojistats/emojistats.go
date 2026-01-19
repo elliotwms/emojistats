@@ -35,6 +35,7 @@ func Run(config Config, ctx context.Context) error {
 		WithIntents(intents).
 		WithHandler(eventhandlers.Ready).
 		WithHandler(eventhandlers.NewReactionAddHandler(config.DB)).
+		WithHandler(eventhandlers.NewReactionRemoveHandler(config.DB)).
 		WithMigrationEnabled(true)
 
 	if config.HealthCheckAddr != "" {
