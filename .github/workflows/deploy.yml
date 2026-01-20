@@ -6,11 +6,10 @@ jobs:
   deploy:
     strategy:
       matrix:
-        environment: [Test, Production]
+        environment: [Test]
     name: Deploy to ${{ matrix.environment }}
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}
-    if: ${{ matrix.environment == 'Test' }}
     env:
       APP_NAME: ${{ vars.EMOJISTATS_APPLICATION_NAME }}
       APP_VERSION: ${{ github.ref_name }}
