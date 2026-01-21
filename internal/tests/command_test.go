@@ -88,3 +88,21 @@ func TestEmojiStatsCommandWithNoReactions(t *testing.T) {
 	then.
 		the_response_should_contain("No reactions found for this emoji.")
 }
+
+func TestStatsCommandWithPublicOption(t *testing.T) {
+	given, when, then := NewCommandStage(t)
+
+	given.
+		a_channel().and().
+		a_message().and().
+		a_default_emoji("👍").and().
+		a_user().and().
+		the_user_adds_a_reaction()
+
+	when.
+		the_stats_command_is_invoked_with_public(true)
+
+	then.
+		the_response_should_contain("## Reaction Statistics").and().
+		the_response_should_be_public()
+}

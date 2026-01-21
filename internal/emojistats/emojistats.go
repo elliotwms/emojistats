@@ -31,7 +31,7 @@ func NewConfig(s *discordgo.Session, appID string) Config {
 }
 
 func Run(config Config, ctx context.Context) error {
-	r := router.New(router.WithDeferredResponse(true))
+	r := router.New()
 
 	b := bot.
 		New(config.ApplicationID, config.Session).

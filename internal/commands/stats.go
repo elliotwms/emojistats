@@ -13,6 +13,11 @@ import (
 // NewStatsHandler creates a handler for the /stats command
 func NewStatsHandler(repo *stats.Repository) router.ApplicationCommandHandler {
 	return func(ctx context.Context, s *discordgo.Session, i *discordgo.InteractionCreate, data discordgo.ApplicationCommandInteractionData) error {
+		public := parsePublicOption(data.Options)
+		if err := deferResponse(s, i, public); err != nil {
+			return err
+		}
+
 		guildID := i.GuildID
 
 		dateRange, err := parseDateRange(data.Options)
@@ -54,6 +59,29 @@ func parseDateRange(options []*discordgo.ApplicationCommandInteractionDataOption
 	}
 
 	return dateRange, nil
+}
+
+func parsePublicOption(options []*discordgo.ApplicationCommandInteractionDataOption) bool {
+	for _, opt := range options {
+		if opt.Name == "public" {
+			return opt.BoolValue()
+		}
+	}
+	return false
+}
+
+func deferResponse(s *discordgo.Session, i *discordgo.InteractionCreate, public bool) error {
+	var flags discordgo.MessageFlags
+	if !public {
+		flags = discordgo.MessageFlagsEphemeral
+	}
+
+	return s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Flags: flags,
+		},
+	})
 }
 
 func respond(s *discordgo.Session, i *discordgo.InteractionCreate, content string) error {

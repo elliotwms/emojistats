@@ -9,6 +9,13 @@ import (
 )
 
 var (
+	publicOption = &discordgo.ApplicationCommandOption{
+		Type:        discordgo.ApplicationCommandOptionBoolean,
+		Name:        "public",
+		Description: "Make the response visible to everyone (default: private)",
+		Required:    false,
+	}
+
 	statsCommand = &discordgo.ApplicationCommand{
 		Type:        discordgo.ChatApplicationCommand,
 		Name:        "stats",
@@ -26,6 +33,7 @@ var (
 				Description: "End date (YYYY-MM-DD format)",
 				Required:    false,
 			},
+			publicOption,
 		},
 	}
 
@@ -52,6 +60,7 @@ var (
 				Description: "End date (YYYY-MM-DD format)",
 				Required:    false,
 			},
+			publicOption,
 		},
 	}
 )

@@ -12,6 +12,11 @@ import (
 // NewEmojiStatsHandler creates a handler for the /emoji-stats command
 func NewEmojiStatsHandler(repo *stats.Repository) router.ApplicationCommandHandler {
 	return func(ctx context.Context, s *discordgo.Session, i *discordgo.InteractionCreate, data discordgo.ApplicationCommandInteractionData) error {
+		public := parsePublicOption(data.Options)
+		if err := deferResponse(s, i, public); err != nil {
+			return err
+		}
+
 		guildID := i.GuildID
 
 		var emojiID string

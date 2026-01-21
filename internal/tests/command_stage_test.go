@@ -127,6 +127,19 @@ func (s *CommandStage) the_user_adds_a_reaction() *CommandStage {
 }
 
 func (s *CommandStage) the_stats_command_is_invoked() *CommandStage {
+	return s.the_stats_command_is_invoked_with_public(false)
+}
+
+func (s *CommandStage) the_stats_command_is_invoked_with_public(public bool) *CommandStage {
+	options := []*discordgo.ApplicationCommandInteractionDataOption{}
+	if public {
+		options = append(options, &discordgo.ApplicationCommandInteractionDataOption{
+			Name:  "public",
+			Type:  discordgo.ApplicationCommandOptionBoolean,
+			Value: true,
+		})
+	}
+
 	i := &discordgo.InteractionCreate{
 		Interaction: &discordgo.Interaction{
 			ID:    s.snowflake.Generate().String(),
@@ -136,6 +149,7 @@ func (s *CommandStage) the_stats_command_is_invoked() *CommandStage {
 				ID:          s.snowflake.Generate().String(),
 				Name:        "stats",
 				CommandType: discordgo.ChatApplicationCommand,
+				Options:     options,
 			},
 			GuildID:   testGuildID,
 			ChannelID: s.channel.ID,
@@ -201,6 +215,19 @@ func (s *CommandStage) the_response_should_contain(text string) *CommandStage {
 		}
 
 		return strings.Contains(res.Content, text)
+	}, 5*time.Second, 100*time.Millisecond)
+
+	return s
+}
+
+func (s *CommandStage) the_response_should_be_public() *CommandStage {
+	s.require.Eventually(func() bool {
+		res, err := s.session.InteractionResponse(s.interaction.Interaction)
+		if err != nil {
+			return false
+		}
+
+		return res.Flags&discordgo.MessageFlagsEphemeral == 0
 	}, 5*time.Second, 100*time.Millisecond)
 
 	return s
