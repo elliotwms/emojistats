@@ -34,7 +34,7 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
-	testDB.Close()
+	_ = testDB.Close()
 	os.Exit(code)
 }
 

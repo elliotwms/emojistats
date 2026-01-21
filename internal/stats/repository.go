@@ -107,7 +107,7 @@ func (r *Repository) getTopEmojis(ctx context.Context, guildID string, dateRange
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var results []EmojiCount
 	for rows.Next() {
@@ -140,7 +140,7 @@ func (r *Repository) getTopSenders(ctx context.Context, guildID, emojiID string,
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var results []UserCount
 	for rows.Next() {
@@ -173,7 +173,7 @@ func (r *Repository) getTopReceivers(ctx context.Context, guildID, emojiID strin
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var results []UserCount
 	for rows.Next() {
@@ -201,7 +201,7 @@ func (r *Repository) getTopMessages(ctx context.Context, guildID, emojiID string
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var results []MessageCount
 	for rows.Next() {
