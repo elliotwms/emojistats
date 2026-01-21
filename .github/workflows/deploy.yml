@@ -6,7 +6,7 @@ jobs:
   deploy:
     strategy:
       matrix:
-        environment: [Test]
+        environment: [Test, Production]
     name: Deploy to ${{ matrix.environment }}
     runs-on: ubuntu-latest
     environment: ${{ matrix.environment }}
