@@ -7,6 +7,8 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/elliotwms/bot"
+	"github.com/elliotwms/bot/interactions/router"
+	"github.com/elliotwms/emojistats/internal/commands"
 	"github.com/elliotwms/emojistats/internal/eventhandlers"
 )
 
@@ -29,6 +31,8 @@ func NewConfig(s *discordgo.Session, appID string) Config {
 }
 
 func Run(config Config, ctx context.Context) error {
+	r := router.New(router.WithDeferredResponse(true))
+
 	b := bot.
 		New(config.ApplicationID, config.Session).
 		WithLogger(config.Logger).
@@ -36,6 +40,8 @@ func Run(config Config, ctx context.Context) error {
 		WithHandler(eventhandlers.Ready).
 		WithHandler(eventhandlers.NewReactionAddHandler(config.DB)).
 		WithHandler(eventhandlers.NewReactionRemoveHandler(config.DB)).
+		WithRouter(r).
+		WithApplicationCommands(commands.Commands(config.DB)).
 		WithMigrationEnabled(true)
 
 	if config.HealthCheckAddr != "" {
