@@ -9,8 +9,10 @@ import (
 
 func NewReactionAddHandler(db *sql.DB) func(*discordgo.Session, *discordgo.MessageReactionAdd) {
 	return func(s *discordgo.Session, r *discordgo.MessageReactionAdd) {
+		id := r.Emoji.MessageFormat()
+
 		slog.Debug("reaction add event received",
-			"emoji_id", r.Emoji.ID,
+			"emoji_id", id,
 			"emoji_name", r.Emoji.Name,
 			"user_id", r.UserID,
 			"channel_id", r.ChannelID,
@@ -24,15 +26,6 @@ func NewReactionAddHandler(db *sql.DB) func(*discordgo.Session, *discordgo.Messa
 			return
 		}
 
-		id := r.Emoji.ID
-		isDefault := false
-
-		// default emojis don't have an id, but a name
-		if id == "" {
-			id = r.Emoji.Name
-			isDefault = true
-		}
-
 		_, err = db.Exec(`
 			INSERT INTO reactions (emoji_id, sender_user_id, receiver_user_id, channel_id, message_id, guild_id, is_default)
 			VALUES ($1, $2, $3, $4, $5, $6, $7)`,
@@ -42,7 +35,7 @@ func NewReactionAddHandler(db *sql.DB) func(*discordgo.Session, *discordgo.Messa
 			r.ChannelID,
 			r.MessageID,
 			r.GuildID,
-			isDefault,
+			r.Emoji.ID == "", // isDefault is reserved for future query use
 		)
 		if err != nil {
 			slog.Error("failed to insert reaction", "error", err)
@@ -50,7 +43,7 @@ func NewReactionAddHandler(db *sql.DB) func(*discordgo.Session, *discordgo.Messa
 		}
 
 		slog.Info("reaction saved",
-			"emoji_id", r.Emoji.ID,
+			"emoji_id", id,
 			"sender", r.UserID,
 			"receiver", msg.Author.ID,
 		)
@@ -59,19 +52,16 @@ func NewReactionAddHandler(db *sql.DB) func(*discordgo.Session, *discordgo.Messa
 
 func NewReactionRemoveHandler(db *sql.DB) func(*discordgo.Session, *discordgo.MessageReactionRemove) {
 	return func(s *discordgo.Session, r *discordgo.MessageReactionRemove) {
+		id := r.Emoji.MessageFormat()
+
 		slog.Debug("reaction remove event received",
-			"emoji_id", r.Emoji.ID,
+			"emoji_id", id,
 			"emoji_name", r.Emoji.Name,
 			"user_id", r.UserID,
 			"channel_id", r.ChannelID,
 			"message_id", r.MessageID,
 			"guild_id", r.GuildID,
 		)
-
-		id := r.Emoji.ID
-		if id == "" {
-			id = r.Emoji.Name
-		}
 
 		res, err := db.Exec(`
 			DELETE FROM reactions
